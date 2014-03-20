@@ -1,30 +1,43 @@
 
-An example demonstrating swarming for anomaly detection models, using multiple
-fields. We assume you have read the following wiki page:
+Introduction
+============
+
+This is an example demonstrating swarming for prediction and anomaly detection
+models. The example also demonstrates using multiple fields. We assume you have
+read the following wiki page:
 
 https://github.com/numenta/nupic/wiki/Running-Swarms
 
 
-Files
-=====
+Data Files
+==========
 
-The data file is contained in the `data` subdirectory.  It contains an x
-value plus the following fields.
+An artificially generated data file is contained in the `data` subdirectory. The
+script `generate_data.py` was used to create the data file. The script generates
+a sine wave plus some interesting additional fields to demonstrate how the CLA
+handles multiple fields. Feel free to modify the script if you want to try
+different variations.
+
+The current script generates an x value (radians) plus the following fields.
 
 metric1 contains sin(x).
 
 metric2 contains sin(x(t-1)). In other words metric1 will be a perfect predictor
-of metric2 at time x+1.
+of metric2 at time t+1.
 
 metric3 is metric 1 plus about 10% noise.
 
-metric4 is random noise
+metric4 is random noise. At every step we choose a random number between -1 and
+1.
 
-metric5 is metric4 from the previous time step. In other words, metric4 is
-going to be a perfect predictor for metric5, even though the signal is random.
+metric5 is the value of metric4 from the *previous time step*. In other words,
+metric4 is going to be a perfect predictor for metric5 at the next time step.
+This is an interesting one because it discriminates temporal patterns from
+spatial patterns. Most statistical tools would tell you that these two fields
+are totally random. As we will see, the CLA can predict temporal correlations
+even when there are NO spatial correlations. 
 
-The script `generate_data.py` was used to create the data file. You can modify
-the script if you want to try different variations.
+
 
 
 Basic swarm with one field
@@ -40,19 +53,19 @@ Note: The argument to maxWorkers controls the level of parallelism used
 in the swarm. If you specify 5 it will launch 5 simultaneous processes. Usually
 you want to set this to the number of cores you have on your system.
 
-This will produce a lot of output (see
-https://github.com/numenta/nupic/wiki/Running-Swarms for an explanation of the
-output).  For now look for lines at the end which look something like this:
+This command will take a few minutes to run and will produce a lot of output
+(see https://github.com/numenta/nupic/wiki/Running-Swarms for an explanation of
+the output). For now look for lines at the end which look something like this:
 
 ```
 Best results on the optimization metric multiStepBestPredictions:multiStep:errorMetric='altMAPE':steps=[1]:window=1000:field=metric1 (maximize=False):
-[69] Experiment _GrokModelInfo(jobID=1037, modelID=3428, status=completed, completionReason=eof, updateCounter=22, numRecords=1500) (modelParams|clParams|alpha_0.0201204914671.modelParams|tpParams|minThreshold_10.modelParams|tpParams|activationThreshold_13.modelParams|tpParams|pamLength_2.modelParams|sensorParams|encoders|metric2:n_106.modelParams|sensorParams|encoders|metric1:n_494.modelParams|spParams|synPermInactiveDec_0.0838352357968):
-  multiStepBestPredictions:multiStep:errorMetric='altMAPE':steps=[1]:window=1000:field=metric1:    1.63305668121
+[9] Experiment _GrokModelInfo(jobID=1160, modelID=23508, status=completed, completionReason=eof, updateCounter=22, numRecords=1500) (modelParams|clParams|alpha_0.0747751425553.modelParams|tpParams|minThreshold_11.modelParams|tpParams|activationThreshold_15.modelParams|tpParams|pamLength_4.modelParams|sensorParams|encoders|metric1:n_444.modelParams|spParams|synPermInactiveDec_0.0302633922224):
+  multiStepBestPredictions:multiStep:errorMetric='altMAPE':steps=[1]:window=1000:field=metric1:    1.94054919265
 ```
 
 This shows the error from the best model discovered by the swarm. It tells us
-that the MAPE error for the best model was 1.633%. (Note: your results may be
-slightly different due to randomness.)
+that the MAPE error for the best model was about 1.94%. (Note: your results may
+be slightly different due to some randomness in the swarm process.)
 
 In addition it will produce a directory called `model_0` which contains
 the parameters of the best CLA model. Now, run this model on the dataset to get
@@ -63,11 +76,16 @@ all the predictions:
 ```
 
 This will produce an output file called
-`model_0/inference/DefaultTask.TemporalAnomaly.predictionLog.csv`
+`model_0/inference/DefaultTask.TemporalAnomaly.predictionLog.csv`. That file
+contains a bunch of different columns (`OpfRunExperiment.py` is a testing and
+experimentation tool for running lots of datasets, so tends to contain a bunch
+of information.)
 
 You can plot the x column against the fields 'metric1' and
-multiStepBestPredictions.1 to show the actual vs predicted values.
-The image basic_results.jpg shows an example of this.
+`multiStepBestPredictions.1` to show the actual vs predicted values.
+The image basic_results.jpg shows an example of this:
+
+![](http://images/basic_results.jpg)
 
 
 Multiple fields example 1
