@@ -116,7 +116,10 @@ Swarm exercise:
 ===============
 
 Try modifying the above JSON file to get the swarm to predict metric3 instead of
-metric1. What happens to the error? Note that metric3 is a sine wave with 10% noise.
+metric1. Remember that metric3 is a sine wave with 10% noise added to it. 
+(Note: you will need to modify the `includedFields` section to include metric3
+instead of metric1, and modify `predictedField` to also include metric3) 
+What happens to the error? 
 
 
 Multiple fields example 1
