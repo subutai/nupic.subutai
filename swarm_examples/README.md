@@ -104,10 +104,10 @@ Multiple fields example 1
 
 The basic swarm above just looked at one of the fields in the dataset. The file 
 `multi1_search_def.json` contains parameters that will tell the swarm to
-searh the field combinations. In this case we will still predict the same
-field, metric1, but it will try to other field combinations to help improve the error.
+searh all field combinations. In this case we will still predict the same
+field, metric1, but it will attempt to use other field combinations to help improve the error.
 The swarm can be started with the similar command but note that the process will
-take longer as it has to try a bunch of combinations.
+*take longer* as it has to try a bunch of combinations.
 
 ```
 %> run_swarm.py multi1_search_def.json --overwrite --maxWorkers 5
@@ -134,11 +134,11 @@ Field Contributions:
     u'metric5': -25.51553640787998}
 ```
 
-We are predicting metric1. This JSON says that metric2 helped improve the error
-by an additional 54%, i.e. 24% better than the previous 1.9%. This makes sense - 
-remember that metric2 was the one that actually predicted the sine wave from the 
-previous time step! The other fields hurt performance and therefore were not 
-included in the final model.  
+We are predicting metric1. This JSON says that metric2 helped reduce the error
+by a relative value of 54%, i.e. it improved the error to 1.9% * (1 - 0.54). This 
+improvement makes sense - remember that metric2 was the one that actually predicted 
+the sine wave from theprevious time step! The other fields hurt performance and 
+therefore were not included in the final model.  
 
 Note that it is very hard for the CLA to do perfectly on such a clean example.
 It is a learning system that is memory based. It has no understanding of sine waves
@@ -150,14 +150,15 @@ Multiple fields example 2:
 =========================
 
 
-The file `test3_search_def.json` contains parameters that will tell the swarm to
-searh all field combinations. In this case we will tell the CLA predict the
-field, metric2. Now remember that metric2 is just metric1 from the previous
-time step.
+We will do two more examples. First, let's try to predict the noise field metric4.
+The file `multi2_search_def.json` contains parameters that will tell the swarm to
+do this and search all field combinations. 
 
 ```
-%> run_swarm.py test3_search_def.json --overwrite --maxWorkers 5
+%> run_swarm.py multi2_search_def.json --overwrite --maxWorkers 5
 ```
+
+As you would expect, the CLA could not predict it very well. Overall error is x%:
 
 ```
 Best results on the optimization metric multiStepBestPredictions:multiStep:errorMetric='altMAPE':steps=[1]:window=1000:field=metric2 (maximize=False):
@@ -165,24 +166,25 @@ Best results on the optimization metric multiStepBestPredictions:multiStep:error
   multiStepBestPredictions:multiStep:errorMetric='altMAPE':steps=[1]:window=1000:field=metric2:    0.913722715504
 ```
 
+And none of the fields helped much:
 
+```
 Field Contributions:
 {   u'metric1': 58.04834257521399,
     u'metric2': 0.0,
     u'metric3': -8.9984071264884,
     u'metric4': -169.10294900144498,
     u'metric5': -269.60989468137325}
-    
-
+```
 
 
 Multiple fields example 3:
 
-Predict metric 5. This is a case where there is complete noise but strong
-temporal correlation.
+Now let us predict metric5. This is also random noise but there is a temporal correlation 
+with metric4 in the previous time step.
 
 ```
-%> run_swarm.py test4_search_def.json --overwrite --maxWorkers 5
+%> run_swarm.py multi3_search_def.json --overwrite --maxWorkers 5
 ```
 
 Field Contributions:
