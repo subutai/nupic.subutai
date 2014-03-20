@@ -38,6 +38,21 @@ even when there are NO spatial correlations.
 
 
 
+Prediction vs Anomaly Detection
+===============================
+
+The CLA basically does anomaly detection by doing prediction and looking for unpredicted situations.
+All of the examples below `inferenceType` = `TemporalAnomaly`. The CSV files contain 
+predictions as well as anomaly scores.
+
+You can also tell the CLA to just do pure prediction using `inferenceType` = `MultiStep`. In general 
+this will give slightly better prediction results but you won't be able to do anomaly detection. 
+(This has to do with the way fields are fed to the CLA.) With MultiStep you can also ask the CLA 
+to predict more than one step ahead. So, if you don't care about anomaly detection it is 
+better to use `MultiStep` and your accuracy may be a bit better.
+
+Now, on to the examples!!
+
 
 Basic swarm with one field
 ==========================
@@ -198,5 +213,7 @@ Field Contributions:
 
 As you can see, the CLA was able to learn the temporal correlation after adding metric4 and doing so
 improved the error significantly.  Although this is a very artificial example, similar situations
-happen often in reality. Quite often additional fields can help improve error, even if there are no spatial correlations! This is a powerful aspect of streaming data that the CLA takes advantage of.
+happen often in reality. Quite often additional fields can help improve error, even if there are no 
+spatial correlations! This is a powerful aspect of streaming data that the CLA takes advantage of.
+
 
