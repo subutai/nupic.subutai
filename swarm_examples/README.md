@@ -1,4 +1,3 @@
-
 Introduction
 ============
 
@@ -85,19 +84,36 @@ You can plot the x column against the fields 'metric1' and
 `multiStepBestPredictions.1` to show the actual vs predicted values.
 The image basic_results.jpg shows an example of this:
 
-![](http://images/basic_results.jpg)
+![](images/basic_results.jpg)
+
+If you zoom in near the end you can see the CLA is doing a decent job of predicting,
+but does occasionally make mistakes:
+
+![](images/basic_results2.jpg)
+
+You can also plot x against the field `anomalyScore` to see the anomaly score over time.
+Here's an example:
+
+![](images/basic_anomaly_score.jpg)
+
+Initially the anomaly score is very high but eventually it goes to near zero. 
 
 
 Multiple fields example 1
 =========================
 
-The file `multi1_search_def.json` contains parameters that will tell the swarm to
-searh all field combinations. In this case we will still predict the same
-field, metric1 but it will try to see if any other fields help improve the error.
+The basic swarm above just looked at one of the fields in the dataset. The file 
+`multi1_search_def.json` contains parameters that will tell the swarm to
+searh the field combinations. In this case we will still predict the same
+field, metric1, but it will try to other field combinations to help improve the error.
+The swarm can be started with the similar command but note that the process will
+take longer as it has to try a bunch of combinations.
 
 ```
 %> run_swarm.py multi1_search_def.json --overwrite --maxWorkers 5
 ```
+
+At the end, look for a Field Contributions JSON, that looks like this:
 
 ```
 Field Contributions:
@@ -108,7 +124,10 @@ Field Contributions:
     u'metric5': -216.28549625834893}
 ```
 
-
+We are predicting metric1. This JSON says that metric2 helped improve the error
+by an additional 24%, i.e. 24% better than the previous 1.9%. Remember that metric2
+was the The other fields
+hurt performance and therefore were not included in the final model.
 
 
 
