@@ -112,6 +112,13 @@ Here's an example:
 Initially the anomaly score is very high but eventually it goes to near zero. 
 
 
+Swarm exercise:
+===============
+
+Try modifying the above JSON file to get the swarm to predict metric3 instead of
+metric1. What happens to the error? Note that metric3 is a sine wave with 10% noise.
+
+
 Multiple fields example 1
 =========================
 
@@ -157,6 +164,13 @@ Note that it is very hard for the CLA to do perfectly on such a clean example.
 It is a learning system that is memory based. It has no understanding of sine waves
 or mathematical functions. However we often find that in real world noisy 
 scenarios it can do very well.
+
+
+Multiple fields exercise:
+========================
+
+Try modifying the above example to get the swarm to predict metric3 instead of
+metric1. What happens to the error? Note that metric3 is a sine wave with 10% noise.
 
 
 Multiple fields example 2:
