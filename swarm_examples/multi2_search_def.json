@@ -1,0 +1,34 @@
+{
+  "includedFields": [
+    {
+      "fieldName": "metric5", 
+      "fieldType": "float",
+      "maxValue": 1.0,
+      "minValue": -1.0
+    }
+  ], 
+  "streamDef": {
+    "info": "test", 
+    "version": 1, 
+    "streams": [
+      {
+        "info": "test1.csv", 
+        "source": "file://test1.csv", 
+        "columns": [
+          "*"
+        ]
+      }
+    ]	
+  }, 
+  "inferenceType": "MultiStep", 
+  "inferenceArgs": {
+    "predictionSteps": [
+      1
+    ], 
+    "predictedField": "metric5"
+  }, 
+  "iterationCount": -1, 
+  "spCoincInputPoolPct": 0.8, 
+  "swarmSize": "medium"
+}
+
