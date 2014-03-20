@@ -42,14 +42,12 @@ Prediction vs Anomaly Detection
 ===============================
 
 The CLA basically does anomaly detection by doing prediction and looking for unpredicted situations.
-All of the examples below `inferenceType` = `TemporalAnomaly`. The CSV files contain 
+All of the examples below use `inferenceType` = `TemporalAnomaly` in the JSON files. The CSV files contain 
 predictions as well as anomaly scores.
 
 You can also tell the CLA to just do pure prediction using `inferenceType` = `MultiStep`. In general 
 this will give slightly better prediction results but you won't be able to do anomaly detection. 
-(This has to do with the way fields are fed to the CLA.) With MultiStep you can also ask the CLA 
-to predict more than one step ahead. So, if you don't care about anomaly detection it is 
-better to use `MultiStep` and your accuracy may be a bit better.
+(The reason for the improvement has to do with the way fields are fed to the CLA.) With MultiStep you can also ask the CLA to predict more than one step ahead. So, if you don't care about anomaly detection it is better to use `MultiStep` and your accuracy may be a bit better.
 
 Now, on to the examples!!
 
