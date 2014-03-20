@@ -113,23 +113,37 @@ take longer as it has to try a bunch of combinations.
 %> run_swarm.py multi1_search_def.json --overwrite --maxWorkers 5
 ```
 
-At the end, look for a Field Contributions JSON, that looks like this:
+In the run I did, I got the following error:
+
+```
+Best results on the optimization metric multiStepBestPredictions:multiStep:errorMetric='altMAPE':steps=[1]:window=1000:field=metric1 (maximize=False):
+[52] Experiment _GrokModelInfo(jobID=1161, modelID=23650, status=completed, completionReason=eof, updateCounter=22, numRecords=1500) (modelParams|clParams|alpha_0.0248715879513.modelParams|tpParams|minThreshold_10.modelParams|tpParams|activationThreshold_13.modelParams|tpParams|pamLength_2.modelParams|sensorParams|encoders|metric2:n_271.modelParams|sensorParams|encoders|metric1:n_392.modelParams|spParams|synPermInactiveDec_0.0727958344423):
+  multiStepBestPredictions:multiStep:errorMetric='altMAPE':steps=[1]:window=1000:field=metric1:    0.886040768868
+```
+
+The end error was 0.89%, significantly better than before. This means at least one 
+additional field helped.  But which one? At the end, look for a Field Contributions 
+JSON, that looks like this:
 
 ```
 Field Contributions:
 {   u'metric1': 0.0,
-    u'metric2': 24.248407536411587,
-    u'metric3': -43.99394069125886,
-    u'metric4': -266.9527814828809,
-    u'metric5': -216.28549625834893}
+    u'metric2': 54.62889798318686,
+    u'metric3': -23.71223053273957,
+    u'metric4': -91.68162623355796,
+    u'metric5': -25.51553640787998}
 ```
 
 We are predicting metric1. This JSON says that metric2 helped improve the error
-by an additional 24%, i.e. 24% better than the previous 1.9%. Remember that metric2
-was the The other fields
-hurt performance and therefore were not included in the final model.
+by an additional 54%, i.e. 24% better than the previous 1.9%. This makes sense - 
+remember that metric2 was the one that actually predicted the sine wave from the 
+previous time step! The other fields hurt performance and therefore were not 
+included in the final model.  
 
-
+Note that it is very hard for the CLA to do perfectly on such a clean example.
+It is a learning system that is memory based. It has no understanding of sine waves
+or mathematical functions. However we often find that in real world noisy 
+scenarios it can do very well.
 
 
 Multiple fields example 2:
