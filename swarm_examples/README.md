@@ -150,50 +150,53 @@ Multiple fields example 2:
 =========================
 
 
-We will do two more examples. First, let's try to predict the noise field metric4.
-The file `multi2_search_def.json` contains parameters that will tell the swarm to
-do this and search all field combinations. 
+We will do two more examples where we try to predict metric5. Remember that metric5
+on its own is basically just noise.  The file `multi2_search_def.json` contains parameters 
+that will tell the swarm to predict metric5. 
 
 ```
 %> run_swarm.py multi2_search_def.json --overwrite --maxWorkers 5
 ```
 
-As you would expect, the CLA could not predict it very well. Overall error is x%:
+As you would expect for pure noise, the CLA could not predict it very well. The overall error
+I got was 86%!
 
 ```
-Best results on the optimization metric multiStepBestPredictions:multiStep:errorMetric='altMAPE':steps=[1]:window=1000:field=metric2 (maximize=False):
-[46] Experiment _GrokModelInfo(jobID=1038, modelID=3566, status=completed, completionReason=eof, updateCounter=22, numRecords=1500) (modelParams|clParams|alpha_0.0351293137955.modelParams|tpParams|minThreshold_10.modelParams|tpParams|activationThreshold_13.modelParams|tpParams|pamLength_2.modelParams|sensorParams|encoders|metric2:n_500.modelParams|sensorParams|encoders|metric1:n_145.modelParams|spParams|synPermInactiveDec_0.0771153642407):
-  multiStepBestPredictions:multiStep:errorMetric='altMAPE':steps=[1]:window=1000:field=metric2:    0.913722715504
-```
-
-And none of the fields helped much:
-
-```
-Field Contributions:
-{   u'metric1': 58.04834257521399,
-    u'metric2': 0.0,
-    u'metric3': -8.9984071264884,
-    u'metric4': -169.10294900144498,
-    u'metric5': -269.60989468137325}
+Best results on the optimization metric multiStepBestPredictions:multiStep:errorMetric='altMAPE':steps=[1]:window=1000:field=metric5 (maximize=False):
+[3] Experiment _GrokModelInfo(jobID=1163, modelID=23986, status=completed, completionReason=eof, updateCounter=22, numRecords=1500) (modelParams|sensorParams|encoders|metric5:n_147.modelParams|clParams|alpha_0.025075.modelParams|tpParams|minThreshold_10.modelParams|tpParams|activationThreshold_13.modelParams|tpParams|pamLength_2.modelParams|sensorParams|encoders|_classifierInput|n_151.modelParams|inferenceType_TemporalMultiStep.modelParams|spParams|synPermInactiveDec_0.075075):
+  multiStepBestPredictions:multiStep:errorMetric='altMAPE':steps=[1]:window=1000:field=metric5:    86.2331806723
 ```
 
 
 Multiple fields example 3:
+==========================
 
-Now let us predict metric5. This is also random noise but there is a temporal correlation 
-with metric4 in the previous time step.
+Now let us predict metric5 but this time let's include all the fields:
 
 ```
 %> run_swarm.py multi3_search_def.json --overwrite --maxWorkers 5
 ```
 
-Field Contributions:
-{   u'metric1': -2.3055948655605376,
-    u'metric2': -0.5331590138027453,
-    u'metric3': -2.4612375287911568,
-    u'metric4': 91.73137670780368,
-    u'metric5': 0.0}
+Here are the results I got
 
+```
 Best results on the optimization metric multiStepBestPredictions:multiStep:errorMetric='altMAPE':steps=[1]:window=1000:field=metric5 (maximize=False):
-[53] Experiment _GrokModelInfo(jobID=1039, modelID=3800, status=completed, completionReason=eof, updateCounter=22, numRecords=1500) (modelParams|sensorParams|encoders|metric4:n_104.modelParams|sensorParams|encoders|metric5:n_193.modelParams|clParams|alpha_0.0001.modelParams|tpParams|minThreshold_9.modelParams|tpParams|activationThreshold_12.modelParams|tpParams|pamLength_2.modelParams|spParams|synPermInactiveDec_0.1):
-  multiStepBestPredictions:multiStep:errorMetric='altMAPE':steps=[1]:window=1000:field=metric5:    6.96976944652
+[105] Experiment _GrokModelInfo(jobID=1164, modelID=24215, status=completed, completionReason=eof, updateCounter=22, numRecords=1500) (modelParams|sensorParams|encoders|metric4:n_359.modelParams|sensorParams|encoders|metric5:n_47.modelParams|clParams|alpha_0.0681682781982.modelParams|tpParams|minThreshold_12.modelParams|tpParams|activationThreshold_15.modelParams|tpParams|pamLength_5.modelParams|spParams|synPermInactiveDec_0.0521076991928):
+  multiStepBestPredictions:multiStep:errorMetric='altMAPE':steps=[1]:window=1000:field=metric5:    3.88245276889
+```
+
+You can see that the error went down hugely, to 3.9%!  Here are the field contributions:
+
+```
+Field Contributions:
+{   u'metric1': -6.291534471910739,
+    u'metric2': -17.877968780367507,
+    u'metric3': -19.571703266506923,
+    u'metric4': 94.35491215302562,
+    u'metric5': 0.0}
+```
+
+As you can see, the CLA was able to learn the temporal correlation after adding metric4 and doing so
+improved the error significantly.  Although this is a very artificial example, similar situations
+happen often in reality. Quite often additional fields can help improve error, even if there are no spatial correlations! This is a powerful aspect of streaming data that the CLA takes advantage of.
+
