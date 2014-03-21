@@ -226,9 +226,73 @@ Field Contributions:
     u'metric5': 0.0}
 ```
 
-As you can see, the CLA was able to learn the temporal correlation after adding metric4 and doing so
-improved the error significantly.  Although this is a very artificial example, similar situations
-happen often in reality. Quite often additional fields can help improve error, even if there are no 
-spatial correlations! This is a powerful aspect of streaming data that the CLA takes advantage of.
+As you can see, the CLA was able to learn the temporal correlation after adding
+metric4 and doing so improved the error significantly. Although this is a very
+artificial example, similar situations happen often in reality. Quite often
+additional fields can help improve error, even if there are no spatial
+correlations! This is a powerful aspect of streaming data that the CLA takes
+advantage of.
+
+
+FAQ
+===
+
+These are some questions people have asked me about the example:
+
+1. In the JSON file, are we supposed to include ALL the signals in the
+"includedFields"? For instance, if X is used to predict Y one step ahead, should
+I include both X and Y in "includedFields"? And further include Y in the
+"predictedField" as well? 
+
+*Answer*: The swarm process searches over a number of fields to see which
+combination can best predict the specified predicted field. The includedFields
+are the fields you want to swarm process to search. This should be
+over-inclusive – the swarm will figure out which ones are actually useful. For
+anomaly detection you always need to include the predictedField (in your example
+Y) in the includedFields list. The others are optional. If you include X and it
+helps, it will be part of the final model. Some of the examples in there include
+other fields, some don’t.
+
+
+2. For the above problem, does CLA use both X(k) and Y(k) to predict Y(k+1) or
+does it use only X(k) to predict Y(k+1)? We specify the predicted field clearly
+in the JSON file but since we also include both X and Y in the inputs, I am not
+clear if the information from Y(k) is used or not.
+
+*Answer*: The fields chosen depends on the statistics of the data. The swarm
+process will determine which fields are useful in predicting the predictedField.
+This is in the fieldContribution JSON – the fields that helped will be part of
+the model. Let’s say it chooses X and Y. Now, exactly which parts of X and Y are
+used to predict Y again depends on specific statistics. The spatial pooler will
+learn which combinations of X and Y occur together. You can think of this as a
+type of clustering algorithm.
+
+
+3. After I run CLA, in the inference folder, I see a
+"DefaultTask.NontemporalMultiStep.predictionLog.csv". In this file, I see
+Y.actual and Y.prediction both in float. Since I am doing one step ahead
+prediction, does the log file automatically shift the Y.predicted data forward
+by one step? ie, the value corresponding to Y.actual(k) is Y.prediction(k) or
+Y.prediction(k+1)?
+
+*Answer*: Yes, by default I believe OpfRunExperiment shifts the predictions so
+they are lined up. So, if you are predicting 5 steps ahead, it will shift things
+by 5 rows. This is just for convenience when plotting things in a spreadsheet.
+When you use a CLA model in a real time scenario, obviously at time T it will
+predict the field at time T+5.
+
+4. For the above problem, how is the anomaly score calculated? 
+    Is it using (Y.actual(k)-Y.prediction(k))? or 
+    is it using bursting which depends on all dimensions of X? or 
+    is it using bursting which depends on all dimensions of X and Y?
+
+*Answer*: It’s based on the intersection between the predicted columns (any
+column that has a predicted cell in it will be a predicted column) and the
+columns that actually become active in the next time step. In this example, the
+maximum intersection is 40 (anomaly score of 0) and the minimum is 0 (anomaly
+score of
+1).
+
+
 
 
