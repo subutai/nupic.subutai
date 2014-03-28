@@ -7,6 +7,14 @@ read the following wiki page:
 
 https://github.com/numenta/nupic/wiki/Running-Swarms
 
+DISCLAIMER: we are using sine waves below to demonstrate some of the points
+because this seems to be one of the most popular first tasks that people try.
+Sine waves are actually not ideal for the CLA. It is a single continuously 
+repeating pattern with no clear beginning and end. Please see an email
+from Jeff Hawkin on this topic:
+
+http://lists.numenta.org/pipermail/nupic_lists.numenta.org/2013-June/000327.html
+
 
 Data Files
 ==========
