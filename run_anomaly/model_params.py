@@ -128,7 +128,7 @@ MODEL_PARAMS = {
             # cell's firing. Typical value is 0.10. 
             'synPermConnected': 0.1,
 
-            'synPermActiveInc': 0.0001,
+            'synPermActiveInc': 0.0015,
 
             'synPermInactiveDec': 0.0005,
 
@@ -207,14 +207,14 @@ MODEL_PARAMS = {
             # during search for the best-matching segments.
             # None=use default
             # Replaces: tpMinThreshold
-            'minThreshold': 9,
+            'minThreshold': 10,
 
             # Segment activation threshold.
             # A segment is active if it has >= tpSegmentActivationThreshold
             # connected synapses that are active due to infActiveState
             # None=use default
             # Replaces: tpActivationThreshold
-            'activationThreshold': 12,
+            'activationThreshold': 13,
 
             'outputType': 'normal',
 
@@ -238,7 +238,7 @@ MODEL_PARAMS = {
 
             # This controls how fast the classifier learns/forgets. Higher values
             # make it adapt faster and forget older patterns faster.
-            'alpha': 0.005,
+            'alpha': 0.035828933612157998,
 
             # This is set after the call to updateConfigFromSubConfig and is
             # computed from the aggregationInfo and predictAheadTime.
