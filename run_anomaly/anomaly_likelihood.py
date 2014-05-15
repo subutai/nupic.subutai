@@ -20,8 +20,8 @@
 # ----------------------------------------------------------------------
 
 """
-This module analyzes and estimates the distribution of averaged anomaly scores.
-Given a new anomaly score s, estimates P(score >= s).
+This module analyzes and estimates the distribution of averaged anomaly scores
+from a CLA model. Given a new anomaly score s, estimates P(score >= s).
 
 The number P(score >= s) represents the likelihood of the current state of
 predictability. For example, a likelihood of 0.01 or 1% means we see this much
@@ -30,71 +30,175 @@ as it seems. For records that arrive every minute, this means once every hour
 and 40 minutes. A likelihood of 0.0001 or 0.01% means we see it once out of
 10,000 records, or about once every 7 days.
 
-There are two primary interface routines:
-
-| estimateAnomalyLikelihoods | batch routine, called initially and once in a while |
-| updateAnomalyLikelihoods | online routine, called for every new data point |
-
-
 USAGE
 -----
 
-1. Initially::
-
-    likelihoods, avgRecordList, estimatorParams = \
-estimateAnomalyLikelihoods(metric_data)
-
-2. Whenever you get new data::
-
-    likelihoods, avgRecordList, estimatorParams = \
-updateAnomalyLikelihoods(data2, estimatorParams)
-
-3. And again (make sure you use the new estimatorParams returned in the above
-   call to updateAnomalyLikelihoods!)::
-
-    likelihoods, avgRecordList, estimatorParams = \
-updateAnomalyLikelihoods(data3, estimatorParams)
-
-4. Every once in a while update estimator with a lot of recent data::
-
-    likelihoods, avgRecordList, estimatorParams = \
-estimateAnomalyLikelihoods(lots_of_metric_data)
+There are two ways to use the code: using the AnomalyLikelihood helper class or
+using the raw individual functions.
 
 
-PARAMS
-~~~~~~
+Helper Class
+------------
+The helper class AnomalyLikelihood is the easiest to use.  To use it simply
+create an instance and then feed it successive anomaly scores:
 
-The parameters dict returned by the above functions has the following
-structure. Note: the client does not need to know the details of this.
+anomalyLikelihood = AnomalyLikelihood()
+while still_have_data:
+  # Get anomaly score from model
+  
+  # Compute probability that an anomaly has ocurred
+  anomalyProbability = anomalyLikelihood.anomalyProbability(
+     value, anomalyScore, timestamp)
 
-::
 
-  {
-    "distribution":               # describes the distribution
-      {
-        "name": STRING,           # name of the distribution, such as 'normal'
-        "mean": SCALAR,           # mean of the distribution
-        "variance": SCALAR,       # variance of the distribution
+Raw functions
+-------------
 
-        # There may also be some keys that are specific to the distribution
-      },
-
-    "historicalLikelihoods": []   # Contains the last windowSize likelihood
-                                  # values returned
-
-    "movingAverage":              # stuff needed to compute a rolling average
-      {
-        "windowSize": SCALAR,     # the size of the averaging window
-        "historicalValues": [],   # list with the last windowSize anomaly scores
-        "total": SCALAR,          # the total of the values in historicalValues
-      },
-
-  }
+There are two lower level functions, estimateAnomalyLikelihoods and
+updateAnomalyLikelihoods. The details of these are described below.
 
 """
 
 import numpy
 import math
+
+
+class AnomalyLikelihood(object):
+  """
+  Helper class for running anomaly likelihood computation.
+  """
+  
+  def __init__(self, CLALearningPeriod = 300, estimationSamples = 300):
+    """
+    CLALearningPeriod - the number of iterations required for the CLA to learn
+    the basic patterns in the dataset and for the anomaly score to 'settle
+    down'. The default is based on empirical observations but in reality this
+    could be larger for more complex domains. Larger values are generally safer.
+    The main downside to having it be too large is the risk of an anomaly
+    ocurring during the learning period.
+
+    estimationSamples - The number of reasonable anomaly scores required for the
+    initial estimate of the Gaussian. The default of 300 records is reasonable -
+    we just need sufficient samples to get a decent estimate for the Gaussian.
+    It's unlikely you will need to tune this since the Gaussian is re-estimated
+    every 100 iterations. No anomaly scores are reported for CLALearningPeriod +
+    estimationSamples iterations. 
+    
+    """
+    self._iteration          = 0
+    self._historicalScores   = []
+    self._distribution       = None
+    self._probationaryPeriod = CLALearningPeriod + estimationSamples
+    self._CLALearningPeriod  = CLALearningPeriod
+
+
+  def computeLogLikelihood(self, likelihood):
+    """
+    Compute a log scale representation of the likelihood value. Since the
+    likelihood computations return low probabilities that often go into 4 9's or
+    5 9's, a log value is more useful for visualization, thresholding, etc.
+    """
+    # The log formula is:
+    # Math.log(1.0000000001 - likelihood) / Math.log(1.0 - 0.9999999999);
+    return math.log(1.0000000001 - likelihood) / -23.02585084720009
+
+
+  def anomalyProbability(self, value, anomalyScore, dttm):
+    """
+    Return the probability that the current value plus anomaly score represents
+    an anomaly given the historical distribution of anomaly scores. The closer
+    the number is to 1 the higher the chance it is a probability. 
+    
+    Given the current metric value, plus the current anomaly
+    score, output the anomalyLikelihood for this record.
+    """
+    dataPoint = (dttm, value, anomalyScore)
+    # We ignore the first probationaryPeriod data points
+    if len(self._historicalScores) < self._probationaryPeriod:
+      likelihood = 0.5
+    else:
+      # On a rolling basis we re-estimate the distribution every 100 iterations
+      if self._distribution is None or (self._iteration % 100 == 0): 
+        _, _, self._distribution = (
+          estimateAnomalyLikelihoods(
+            self._historicalScores,
+            skipRecords = self._CLALearningPeriod)
+          )
+        
+      likelihoods, _, self._distribution = (
+        updateAnomalyLikelihoods([dataPoint],
+          self._distribution)
+      )
+      likelihood = 1.0 - likelihoods[0]
+      
+    # Before we exit update historical scores and iteration
+    self._historicalScores.append(dataPoint)
+    self._iteration += 1
+
+    return likelihood
+
+
+# 
+# USAGE FOR LOW-LEVEL FUNCTIONS
+# -----------------------------
+# 
+# There are two primary interface routines:
+# 
+# | estimateAnomalyLikelihoods | batch routine, called initially and once in a while |
+# | updateAnomalyLikelihoods | online routine, called for every new data point |
+# 
+# 1. Initially::
+# 
+#    likelihoods, avgRecordList, estimatorParams = \
+# estimateAnomalyLikelihoods(metric_data)
+# 
+# 2. Whenever you get new data::
+# 
+#    likelihoods, avgRecordList, estimatorParams = \
+# updateAnomalyLikelihoods(data2, estimatorParams)
+# 
+# 3. And again (make sure you use the new estimatorParams returned in the above
+#   call to updateAnomalyLikelihoods!)::
+# 
+#    likelihoods, avgRecordList, estimatorParams = \
+# updateAnomalyLikelihoods(data3, estimatorParams)
+# 
+# 4. Every once in a while update estimator with a lot of recent data::
+# 
+#    likelihoods, avgRecordList, estimatorParams = \
+# estimateAnomalyLikelihoods(lots_of_metric_data)
+# 
+# 
+# PARAMS
+# ~~~~~~
+# 
+# The parameters dict returned by the above functions has the following
+# structure. Note: the client does not need to know the details of this.
+# 
+# ::
+# 
+#  {
+#    "distribution":               # describes the distribution
+#      {
+#        "name": STRING,           # name of the distribution, such as 'normal'
+#        "mean": SCALAR,           # mean of the distribution
+#        "variance": SCALAR,       # variance of the distribution
+# 
+#        # There may also be some keys that are specific to the distribution
+#      },
+# 
+#    "historicalLikelihoods": []   # Contains the last windowSize likelihood
+#                                  # values returned
+# 
+#    "movingAverage":              # stuff needed to compute a rolling average
+#      {
+#        "windowSize": SCALAR,     # the size of the averaging window
+#        "historicalValues": [],   # list with the last windowSize anomaly scores
+#        "total": SCALAR,          # the total of the values in historicalValues
+#      },
+# 
+#  }
+
 
 def estimateAnomalyLikelihoods(anomalyScores,
                                averagingWindow = 10,
@@ -493,6 +597,7 @@ def isValidEstimatorParams(p):
 def sampleDistribution(params, numSamples, verbosity = 0):
   """
   Given the parameters of a distribution, generate numSamples points from it.
+  This routine is mostly for testing.
 
   :returns: A numpy array of samples.
   """
