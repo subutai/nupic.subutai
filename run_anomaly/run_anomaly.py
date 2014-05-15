@@ -27,56 +27,67 @@ A simple client to run CLA anomaly detection using the OPF.
 from optparse import OptionParser
 import sys
 import csv
+import math
 import datetime
 import dateutil.parser
+import json
 
 from nupic.frameworks.opf.modelfactory import ModelFactory
 from nupic.frameworks.opf.predictionmetricsmanager import MetricsManager
 
-import model_params
-
-def createModel():
-  return ModelFactory.create(model_params.MODEL_PARAMS)
-
+import anomaly_likelihood
 
 def runAnomaly(options):
   """
   Create and run a CLA Model on the given dataset (based on the hotgym anomaly
   client in NuPIC).
   """
-  
+  # Load the model params JSON
+  with open("model_params.json") as fp:
+    modelParams = json.load(fp)
+
   # Update the min/max value for the encoder
-  sensorParams = model_params.MODEL_PARAMS['modelParams']['sensorParams']
+  sensorParams = modelParams['modelParams']['sensorParams']
   sensorParams['encoders']['value']['maxval'] = options.max
   sensorParams['encoders']['value']['minval'] = options.min
-  
-  model = createModel()
+
+  model = ModelFactory.create(modelParams)
   model.enableInference({'predictedField': 'value'})
   with open (options.inputFile) as fin:
     
     # Open file and setup headers
     reader = csv.reader(fin)
     csvWriter = csv.writer(open(options.outputFile,"wb"))
-    csvWriter.writerow(["timestamp", "value", "anomaly_score"])
+    csvWriter.writerow(["timestamp", "value",
+                        "anomaly_score", "likelihood_score"])
     headers = reader.next()
+    
+    # The anomaly likelihood object
+    anomalyLikelihood = anomaly_likelihood.AnomalyLikelihood()
     
     # Iterate through each record in the CSV file
     print "Starting processing at",datetime.datetime.now()
     for i, record in enumerate(reader, start=1):
       
-      # Read the data and convert to a dict
+      # Convert input data to a dict so we can pass it into the model
       inputData = dict(zip(headers, record))
       inputData["value"] = float(inputData["value"])
       inputData["dttm"] = dateutil.parser.parse(inputData["dttm"])
       
-      # Send it to the CLA and get back the results
+      # Send it to the CLA and get back the raw anomaly score
       result = model.run(inputData)
-      
-      # Retrieve the anomaly score and write it to a file
       anomalyScore = result.inferences['anomalyScore']
-      csvWriter.writerow([inputData["dttm"], inputData["value"],
-                          anomalyScore])
       
+      # Compute the Anomaly Likelihood
+      likelihood = anomalyLikelihood.anomalyProbability(
+        inputData["value"], anomalyScore, inputData["dttm"])
+      if likelihood > 0.9999:
+        print "Anomaly detected:",inputData['dttm'],inputData['value'],likelihood
+
+      # Write results to the output CSV file
+      csvWriter.writerow([inputData["dttm"], inputData["value"],
+                          anomalyScore, likelihood])
+
       # Progress report
       if (i%500) == 0: print i,"records processed"
 
@@ -100,7 +111,7 @@ if __name__ == "__main__":
   parser = OptionParser(helpString)
   parser.add_option("--inputFile",
                     help="Path to data file. (default: %default)", 
-                    dest="inputFile", default="data/hotgym.csv")
+                    dest="inputFile", default="data/cpu_cc0c5.csv")
   parser.add_option("--outputFile",
                     help="Output file. Results will be written to this file."
                     " (default: %default)", 
