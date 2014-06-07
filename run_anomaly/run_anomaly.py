@@ -35,7 +35,7 @@ import json
 from nupic.frameworks.opf.modelfactory import ModelFactory
 from nupic.frameworks.opf.predictionmetricsmanager import MetricsManager
 
-import anomaly_likelihood
+from nupic.algorithms.anomaly_likelihood import AnomalyLikelihood
 
 def runAnomaly(options):
   """
@@ -56,14 +56,16 @@ def runAnomaly(options):
   with open (options.inputFile) as fin:
     
     # Open file and setup headers
+    # Here we write the log likelihood value as the 'anomaly score'
+    # The actual CLA outputs are labeled 'raw anomaly score'
     reader = csv.reader(fin)
     csvWriter = csv.writer(open(options.outputFile,"wb"))
     csvWriter.writerow(["timestamp", "value",
-                        "anomaly_score", "likelihood_score"])
+                        "raw anomaly score", "likelihood", "anomaly_score"])
     headers = reader.next()
     
     # The anomaly likelihood object
-    anomalyLikelihood = anomaly_likelihood.AnomalyLikelihood()
+    anomalyLikelihood = AnomalyLikelihood()
     
     # Iterate through each record in the CSV file
     print "Starting processing at",datetime.datetime.now()
@@ -81,15 +83,16 @@ def runAnomaly(options):
       # Compute the Anomaly Likelihood
       likelihood = anomalyLikelihood.anomalyProbability(
         inputData["value"], anomalyScore, inputData["dttm"])
+      logLikelihood = anomalyLikelihood.computeLogLikelihood(likelihood)
       if likelihood > 0.9999:
         print "Anomaly detected:",inputData['dttm'],inputData['value'],likelihood
 
       # Write results to the output CSV file
       csvWriter.writerow([inputData["dttm"], inputData["value"],
-                          anomalyScore, likelihood])
+                          anomalyScore, likelihood, logLikelihood])
 
       # Progress report
-      if (i%500) == 0: print i,"records processed"
+      if (i%1000) == 0: print i,"records processed"
 
   print "Completed processing",i,"records at",datetime.datetime.now()
   print "Anomaly scores for",options.inputFile,
