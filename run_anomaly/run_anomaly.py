@@ -75,6 +75,7 @@ def runAnomaly(options):
       inputData = dict(zip(headers, record))
       inputData["value"] = float(inputData["value"])
       inputData["dttm"] = dateutil.parser.parse(inputData["dttm"])
+      #inputData["dttm"] = datetime.datetime.now()
       
       # Send it to the CLA and get back the raw anomaly score
       result = model.run(inputData)

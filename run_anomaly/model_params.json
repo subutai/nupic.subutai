@@ -53,7 +53,7 @@
                     "fieldname": "value",
                     "maxval": 100.0,
                     "minval": 0.0,
-                    "n": 114,
+                    "n": 134,
                     "name": "value",
                     "type": "ScalarEncoder",
                     "w": 21
