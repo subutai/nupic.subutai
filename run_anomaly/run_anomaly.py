@@ -53,6 +53,7 @@ def runAnomaly(options):
   if resolution is None:
     resolution = max(0.001,
                      (options.max - options.min) / numBuckets)
+  print "Using resolution value: {0}".format(resolution)
   sensorParams['encoders']['value']['resolution'] = resolution
 
   model = ModelFactory.create(modelParams)
