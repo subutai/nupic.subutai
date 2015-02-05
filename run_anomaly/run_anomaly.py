@@ -46,10 +46,15 @@ def runAnomaly(options):
   with open("model_params.json") as fp:
     modelParams = json.load(fp)
 
-  # Update the min/max value for the encoder
+  # Update the resolution value for the encoder
   sensorParams = modelParams['modelParams']['sensorParams']
-  sensorParams['encoders']['value']['maxval'] = options.max
-  sensorParams['encoders']['value']['minval'] = options.min
+  numBuckets = modelParams['modelParams']['sensorParams']['encoders']['value'].pop('numBuckets')
+  resolution = options.resolution
+  if resolution is None:
+    resolution = max(0.001,
+                     (options.max - options.min) / numBuckets)
+  print "Using resolution value: {0}".format(resolution)
+  sensorParams['encoders']['value']['resolution'] = resolution
 
   model = ModelFactory.create(modelParams)
   model.enableInference({'predictedField': 'value'})
@@ -61,7 +66,7 @@ def runAnomaly(options):
     reader = csv.reader(fin)
     csvWriter = csv.writer(open(options.outputFile,"wb"))
     csvWriter.writerow(["timestamp", "value",
-                        "raw anomaly score", "likelihood", "anomaly_score"])
+                        "_raw_score", "likelihood_score", "log_likelihood_score"])
     headers = reader.next()
     
     # The anomaly likelihood object
@@ -124,6 +129,8 @@ if __name__ == "__main__":
       help="Maximum number for the value field. [default: %default]")
   parser.add_option("--min", default=0.0, type=float,
       help="Minimum number for the value field. [default: %default]")
+  parser.add_option("--resolution", default=None, type=float,
+      help="Resolution for the value field (overrides min and max). [default: %default]")
   
   options, args = parser.parse_args(sys.argv[1:])
 
