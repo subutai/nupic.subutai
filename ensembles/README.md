@@ -18,23 +18,26 @@ uniform) averaging weights.
 Results
 =======
 
-I measured the mean squared error for the last 2000 records. The individual 
-model errors varied from 113 to 141.  The standard deviation of the errors 
-varied from 285 to 420.
+The results are summarized in the table below. The error is mean squared error for 
+the last 2000 records. 
 
-The "average ensemble" got an error of 84.5, which is almost 30 better than  the
-best individual model. The standard deviation was also a lot better, at 200. 
-The "least squares" ensemble got an error of 75,  which is 38 better than the 
-best individual. The standard deviation was 183. 
+Experiment | Error | Standard deviation
+------------ | ------------- | -----------
+Single model | 113-141 | 285-420
+Ensemble (averaged) | 84.5 | 200
+Ensemble (least squares) | 75 | 183
+Optimal (oracle) | 28 | NA
 
 Both simple ensembles therefore produce more accurate and tighter predictions
-than any individual model.
+than any individual model. 
 
-I also looked at how an "optimal ensemble" would perform. Suppose you knew 
+I also looked at how an "optimal ensemble" would perform. Suppose you had an 
+oracle that knew 
 exactly which HTM model had the best prediction at each time step. How well 
-could this ensemble perform?  This one has an error of 28,  which is far better
-than anything above.  This shows that  there might still be quite a bit more 
-room for improvement if you could create a better model selector.
+could this ensemble perform?  The oracle has an error of 28,  which is far better
+than anything above.  Although this is not achievable, it shows that there might 
+still be quite a bit more room for improvement if you could create a 
+better model selector.
 
 
 Discussion
