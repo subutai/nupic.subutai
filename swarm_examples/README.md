@@ -15,6 +15,11 @@ from Jeff Hawkin on this topic:
 
 http://lists.numenta.org/pipermail/nupic_lists.numenta.org/2013-June/000327.html
 
+Assumptions
+===========
+
+You have [NuPIC](http://github.com/numenta/nupic) installed and the `NUPIC` 
+environment variable set to the repository path.
 
 Data Files
 ==========
@@ -66,7 +71,7 @@ Basic swarm with one field
 Run a basic swarm using the following command:
 
 ```
-%> run_swarm.py basic_search_def.json --overwrite --maxWorkers 5
+%> $NUPIC/scripts/run_swarm.py basic_search_def.json --overwrite --maxWorkers 5
 ```
 
 Note: The argument to maxWorkers controls the level of parallelism used
@@ -79,12 +84,12 @@ the output). For now look for lines at the end which look something like this:
 
 ```
 Best results on the optimization metric multiStepBestPredictions:multiStep:errorMetric='altMAPE':steps=[1]:window=1000:field=metric1 (maximize=False):
-[9] Experiment _GrokModelInfo(jobID=1160, modelID=23508, status=completed, completionReason=eof, updateCounter=22, numRecords=1500) (modelParams|clParams|alpha_0.0747751425553.modelParams|tpParams|minThreshold_11.modelParams|tpParams|activationThreshold_15.modelParams|tpParams|pamLength_4.modelParams|sensorParams|encoders|metric1:n_444.modelParams|spParams|synPermInactiveDec_0.0302633922224):
-  multiStepBestPredictions:multiStep:errorMetric='altMAPE':steps=[1]:window=1000:field=metric1:    1.94054919265
+[17] Experiment _NupicModelInfo(jobID=1456, modelID=123986, status=completed, completionReason=eof, updateCounter=22, numRecords=1500) (modelParams|clParams|alpha_0.0807779076052.modelParams|tpParams|minThreshold_12.modelParams|tpParams|activationThreshold_16.modelParams|tpParams|pamLength_5.modelParams|sensorParams|encoders|metric1:n_443.modelParams|spParams|synPermInactiveDec_0.0142610042599):
+  multiStepBestPredictions:multiStep:errorMetric='altMAPE':steps=[1]:window=1000:field=metric1:    1.88226653596
 ```
 
 This shows the error from the best model discovered by the swarm. It tells us
-that the MAPE error for the best model was about 1.94%. (Note: your results may
+that the MAPE error for the best model was about 1.88%. (Note: your results may
 be slightly different due to some randomness in the swarm process.)
 
 In addition it will produce a directory called `model_0` which contains
@@ -92,12 +97,12 @@ the parameters of the best CLA model. Now, run this model on the dataset to get
 all the predictions:
 
 ```
-%> python $NTA/share/opf/bin/OpfRunExperiment.py model_0
+%> $NUPIC/scripts/run_opf_experiment.py model_0
 ```
 
 This will produce an output file called
 `model_0/inference/DefaultTask.TemporalAnomaly.predictionLog.csv`. That file
-contains a bunch of different columns (`OpfRunExperiment.py` is a testing and
+contains a bunch of different columns (`run_opf_experiment.py` is a testing and
 experimentation tool for running lots of datasets, so tends to contain a bunch
 of information.)
 
@@ -141,35 +146,39 @@ The swarm can be started with the similar command but note that the process will
 *take longer* as it has to try a bunch of combinations.
 
 ```
-%> run_swarm.py multi1_search_def.json --overwrite --maxWorkers 5
+%> $NUPIC/scripts/run_swarm.py multi1_search_def.json --overwrite --maxWorkers 5
 ```
 
 In the run I did, I got the following error:
 
 ```
 Best results on the optimization metric multiStepBestPredictions:multiStep:errorMetric='altMAPE':steps=[1]:window=1000:field=metric1 (maximize=False):
-[52] Experiment _GrokModelInfo(jobID=1161, modelID=23650, status=completed, completionReason=eof, updateCounter=22, numRecords=1500) (modelParams|clParams|alpha_0.0248715879513.modelParams|tpParams|minThreshold_10.modelParams|tpParams|activationThreshold_13.modelParams|tpParams|pamLength_2.modelParams|sensorParams|encoders|metric2:n_271.modelParams|sensorParams|encoders|metric1:n_392.modelParams|spParams|synPermInactiveDec_0.0727958344423):
-  multiStepBestPredictions:multiStep:errorMetric='altMAPE':steps=[1]:window=1000:field=metric1:    0.886040768868
+[9] Experiment _NupicModelInfo(jobID=1458, modelID=124313, status=completed, completionReason=eof, updateCounter=22, numRecords=1500) (modelParams|clParams|alpha_0.1.modelParams|tpParams|minThreshold_12.modelParams|tpParams|activationThreshold_16.modelParams|tpParams|pamLength_5.modelParams|sensorParams|encoders|metric1:n_521.modelParams|spParams|synPermInactiveDec_0.005285):
+  multiStepBestPredictions:multiStep:errorMetric='altMAPE':steps=[1]:window=1000:field=metric1:    2.16445919912
 ```
 
-The end error was 0.89%, significantly better than before. This means at least one 
-additional field helped.  But which one? At the end, look for a Field Contributions 
-JSON, that looks like this:
+Previous:
+> The end error was 0.89%, significantly better than before. This means at least
+> one additional field helped.  But which one? At the end, look for a Field 
+> Contributions JSON, that looks like this:
+
+I'm not sure what happened here. -- Matt
 
 ```
 Field Contributions:
 {   u'metric1': 0.0,
-    u'metric2': 54.62889798318686,
-    u'metric3': -23.71223053273957,
-    u'metric4': -91.68162623355796,
-    u'metric5': -25.51553640787998}
+    u'metric2': -11.202781024628713,
+    u'metric3': -89.77508815971255,
+    u'metric4': -115.27516774074387,
+    u'metric5': -113.44391458481351}
 ```
 
-We are predicting metric1. This JSON says that metric2 helped reduce the error
-by a relative value of 54%, i.e. it improved the error to 1.9% * (1 - 0.54). This 
-improvement makes sense - remember that metric2 was the one that actually predicted 
-the sine wave from theprevious time step! The other fields hurt performance and 
-therefore were not included in the final model.  
+Previous:
+> We are predicting metric1. This JSON says that metric2 helped reduce the error
+> by a relative value of 54%, i.e. it improved the error to 1.9% * (1 - 0.54). This 
+> improvement makes sense - remember that metric2 was the one that actually predicted 
+> the sine wave from theprevious time step! The other fields hurt performance and 
+> therefore were not included in the final model.  
 
 Note that it is very hard for the CLA to do perfectly on such a clean example.
 It is a learning system that is memory based. It has no understanding of sine waves
@@ -193,7 +202,7 @@ on its own is basically just noise.  The file `multi2_search_def.json` contains 
 that will tell the swarm to predict metric5. 
 
 ```
-%> run_swarm.py multi2_search_def.json --overwrite --maxWorkers 5
+%> $NUPIC/scripts/run_swarm.py multi2_search_def.json --overwrite --maxWorkers 5
 ```
 
 As you would expect for pure noise, the CLA could not predict it very well. The overall error
@@ -201,8 +210,13 @@ I got was 86%!
 
 ```
 Best results on the optimization metric multiStepBestPredictions:multiStep:errorMetric='altMAPE':steps=[1]:window=1000:field=metric5 (maximize=False):
-[3] Experiment _GrokModelInfo(jobID=1163, modelID=23986, status=completed, completionReason=eof, updateCounter=22, numRecords=1500) (modelParams|sensorParams|encoders|metric5:n_147.modelParams|clParams|alpha_0.025075.modelParams|tpParams|minThreshold_10.modelParams|tpParams|activationThreshold_13.modelParams|tpParams|pamLength_2.modelParams|sensorParams|encoders|_classifierInput|n_151.modelParams|inferenceType_TemporalMultiStep.modelParams|spParams|synPermInactiveDec_0.075075):
-  multiStepBestPredictions:multiStep:errorMetric='altMAPE':steps=[1]:window=1000:field=metric5:    86.2331806723
+[11] Experiment _NupicModelInfo(jobID=1459, modelID=124597, status=completed, completionReason=eof, updateCounter=22, numRecords=1500) (modelParams|sensorParams|encoders|metric5:n_71.modelParams|clParams|alpha_0.00610213290723.modelParams|tpParams|minThreshold_10.modelParams|tpParams|activationThreshold_12.modelParams|tpParams|pamLength_1.modelParams|sensorParams|encoders|_classifierInput|n_28.modelParams|inferenceType_NontemporalMultiStep.modelParams|spParams|synPermInactiveDec_0.1):
+  multiStepBestPredictions:multiStep:errorMetric='altMAPE':steps=[1]:window=1000:field=metric5:    85.0171086296
+```
+
+```
+Field Contributions:
+{   u'metric5': 0.0}
 ```
 
 
@@ -212,25 +226,25 @@ Multiple fields example 3:
 Now let us predict metric5 but this time let's include all the fields:
 
 ```
-%> run_swarm.py multi3_search_def.json --overwrite --maxWorkers 5
+%> $NUPIC/scripts/run_swarm.py multi3_search_def.json --overwrite --maxWorkers 5
 ```
 
 Here are the results I got
 
 ```
 Best results on the optimization metric multiStepBestPredictions:multiStep:errorMetric='altMAPE':steps=[1]:window=1000:field=metric5 (maximize=False):
-[105] Experiment _GrokModelInfo(jobID=1164, modelID=24215, status=completed, completionReason=eof, updateCounter=22, numRecords=1500) (modelParams|sensorParams|encoders|metric4:n_359.modelParams|sensorParams|encoders|metric5:n_47.modelParams|clParams|alpha_0.0681682781982.modelParams|tpParams|minThreshold_12.modelParams|tpParams|activationThreshold_15.modelParams|tpParams|pamLength_5.modelParams|spParams|synPermInactiveDec_0.0521076991928):
-  multiStepBestPredictions:multiStep:errorMetric='altMAPE':steps=[1]:window=1000:field=metric5:    3.88245276889
+[41] Experiment _NupicModelInfo(jobID=1460, modelID=124817, status=completed, completionReason=eof, updateCounter=22, numRecords=1500) (modelParams|sensorParams|encoders|metric4:n_296.modelParams|sensorParams|encoders|metric5:n_53.modelParams|clParams|alpha_0.055045.modelParams|tpParams|minThreshold_11.modelParams|tpParams|activationThreshold_14.modelParams|tpParams|pamLength_3.modelParams|spParams|synPermInactiveDec_0.055135):
+  multiStepBestPredictions:multiStep:errorMetric='altMAPE':steps=[1]:window=1000:field=metric5:    4.32907961629
 ```
 
 You can see that the error went down hugely, to 3.9%!  Here are the field contributions:
 
 ```
 Field Contributions:
-{   u'metric1': -6.291534471910739,
-    u'metric2': -17.877968780367507,
-    u'metric3': -19.571703266506923,
-    u'metric4': 94.35491215302562,
+{   u'metric1': 2.375028729272684,
+    u'metric2': 0.9204218934435886,
+    u'metric3': 3.687943251991357,
+    u'metric4': 94.83844188964719,
     u'metric5': 0.0}
 ```
 

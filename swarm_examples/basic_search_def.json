@@ -13,7 +13,7 @@
     "streams": [
       {
         "info": "test1.csv", 
-        "source": "file://test1.csv", 
+        "source": "file://data/test1.csv", 
         "columns": [
           "*"
         ]
