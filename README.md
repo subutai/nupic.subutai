@@ -12,6 +12,6 @@ License
 =======
 
 I am a Numenta employee. As such this code is offered under the same terms as
-NuPIC. The license is GPL and Numenta owns the original copyright. If you have a
+NuPIC. The license is AGPL and Numenta owns the original copyright. If you have a
 pull request or otherwise want to contribute to this repository, please ensure
 you have agreed to the Numenta Contributor's License Agreement first.
