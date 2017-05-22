@@ -3,9 +3,9 @@ Introduction
 
 This is an example demonstrating swarming for prediction and anomaly detection
 models. The example also demonstrates using multiple fields. We assume you have
-read the following wiki page:
+read the following page:
 
-https://github.com/numenta/nupic/wiki/Running-Swarms
+http://nupic.docs.numenta.org/0.7.0.dev0/guides/swarming/running.html
 
 DISCLAIMER: we are using sine waves below to demonstrate some of the points
 because this seems to be one of the most popular first tasks that people try.
@@ -79,7 +79,7 @@ in the swarm. If you specify 5 it will launch 5 simultaneous processes. Usually
 you want to set this to the number of cores you have on your system.
 
 This command will take a few minutes to run and will produce a lot of output
-(see https://github.com/numenta/nupic/wiki/Running-Swarms for an explanation of
+(see http://nupic.docs.numenta.org/0.7.0.dev0/guides/swarming/running.html for an explanation of
 the output). For now look for lines at the end which look something like this:
 
 ```
