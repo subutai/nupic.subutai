@@ -218,12 +218,6 @@ Best results on the optimization metric multiStepBestPredictions:multiStep:error
   multiStepBestPredictions:multiStep:errorMetric='altMAPE':steps=[1]:window=1000:field=metric5:    82.4303662373
 ```
 
-```
-Field Contributions:
-{   u'metric5': 0.0}
-```
-
-
 Multiple fields example 3:
 ==========================
 
