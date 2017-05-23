@@ -96,7 +96,7 @@ Best results on the optimization metric multiStepBestPredictions:multiStep:error
 ```
 
 This shows the error from the best model discovered by the swarm. It tells us
-that the MAPE error for the best model was about 1.88%. (Note: your results may
+that the MAPE error for the best model was about 2.15%. (Note: your results may
 be slightly different due to some randomness in the swarm process.)
 
 In addition it will produce a directory called `model_0` which contains
