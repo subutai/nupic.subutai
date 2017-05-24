@@ -9,28 +9,25 @@ http://nupic.docs.numenta.org/0.7.0.dev0/guides/swarming/running.html
 
 DISCLAIMER: we are using sine waves below to demonstrate some of the points
 because this seems to be one of the most popular first tasks that people try.
-Sine waves are actually not ideal for the CLA. It is a single continuously
-repeating pattern with no clear beginning and end. Please see an email
-from Jeff Hawkin on this topic:
+Sine waves are actually not ideal for the HTM sequence learning. It is a single
+continuously repeating pattern with no clear beginning and end. Please see an
+email from Jeff Hawkin on this topic:
 
 http://lists.numenta.org/pipermail/nupic_lists.numenta.org/2013-June/000327.html
 
-Assumptions
+Dependencies
 ===========
 
-You have [NuPIC](http://github.com/numenta/nupic) 0.6.0 installed and the `NUPIC`
-environment variable set to the repository path.
-
-    pip install nupic==0.6.0
+- [NuPIC](http://github.com/numenta/nupic)
 
 Data Files
 ==========
 
 An artificially generated data file is contained in the `data` subdirectory. The
 script `generate_data.py` was used to create the data file. The script generates
-a sine wave plus some interesting additional fields to demonstrate how the CLA
-handles multiple fields. Feel free to modify the script if you want to try
-different variations.
+a sine wave plus some interesting additional fields to demonstrate how HTM
+sequence learning handles multiple fields. Feel free to modify the script if you
+want to try different variations.
 
 The current script generates an x value (radians) plus the following fields.
 
@@ -48,7 +45,7 @@ metric5 is the value of metric4 from the *previous time step*. In other words,
 metric4 is going to be a perfect predictor for metric5 at the next time step.
 This is an interesting one because it discriminates temporal patterns from
 spatial patterns. Most statistical tools would tell you that these two fields
-are totally random. As we will see, the CLA can predict temporal correlations
+are totally random. As we will see, HTM can predict temporal correlations
 even when there are NO spatial correlations.
 
 
@@ -56,16 +53,16 @@ even when there are NO spatial correlations.
 Prediction vs Anomaly Detection
 ===============================
 
-The CLA basically does anomaly detection by doing prediction and looking for
+NuPIC basically does anomaly detection by doing prediction and looking for
 unpredicted situations. All of the examples below use `inferenceType` =
 `TemporalAnomaly` in the JSON files. The CSV files contain predictions as well
 as anomaly scores.
 
-You can also tell the CLA to just do pure prediction using `inferenceType` =
+You can also tell NuPIC to just do pure prediction using `inferenceType` =
 `MultiStep`. In general this will give slightly better prediction results but
 you won't be able to do anomaly detection. (The reason for the improvement has
-to do with the way fields are fed to the CLA.) With MultiStep you can also ask
-the CLA to predict more than one step ahead. So, if you don't care about anomaly
+to do with the way fields are fed to the NuPIC.) With MultiStep you can also ask
+NuPIC to predict more than one step ahead. So, if you don't care about anomaly
 detection it is better to use `MultiStep` and your accuracy may be a bit better.
 
 Now, on to the examples!!
