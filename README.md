@@ -21,6 +21,11 @@ The directory `anomaly_classification` contains a simple example showing
 how to use classification for detecting known anomalies even if they
 occur again.
 
+The directory `rns` contains simple code for computing with residue
+number systems. I did this mostly to build up some intuition for grid
+cells.
+
+
 License
 =======
 
