@@ -1,4 +1,4 @@
 *.pyc
 *.pkl
-
+.DS_Store
 .idea/
