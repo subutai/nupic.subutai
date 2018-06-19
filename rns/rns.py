@@ -27,12 +27,6 @@ intuitions for grid cells. The implementation is super inefficient.
 See https://en.wikipedia.org/wiki/Residue_number_system for more details.
 """
 
-import csv
-import copy
-import datetime
-import numpy
-
-
 def rnsEncode(x, moduli):
   """
   :param x: the number you want to encode
@@ -126,7 +120,7 @@ def rnsComputeAmbiguity(moduli, xmin, xmax):
   ambiguity = 0
   numAmbiguous = 0
   for i in range(xmin,xmax+1):
-    ir = rnsEncode(i, rns)
+    ir = rnsEncode(i, moduli)
     ambiguousNumbers = rnsAmbiguityList(ir, xmin, xmax, rns)
     if len(ambiguousNumbers) > 1:
       ambiguity += len(ambiguousNumbers) - 1
@@ -162,6 +156,24 @@ if __name__ == "__main__":
     rnsMultiply(xr, yr, rns),rns)
 
   # Compute ambiguity of some rns systems
+
+  # 3 moduli are not large enough
+  rns = [5, 11, 13]
+  print
+  print "RNS system=",rns
+  a, p = rnsComputeAmbiguity(rns, 0, 1000)
+  print "Overall ambiguity for range [0,1000] =", a
+  print "Probability of ambiguity =", p
+
+  # Has 4 moduli which is better, but 12 is a multiple of 3 so not great
+  rns = [3, 5, 12, 13]
+  print
+  print "RNS system=",rns
+  a, p = rnsComputeAmbiguity(rns, 0, 1000)
+  print "Overall ambiguity for range [0,1000] =", a
+  print "Probability of ambiguity =", p
+
+  # Has 4 moduli, all prime - this one is good.
   rns = [3, 5, 11, 13]
   print
   print "RNS system=",rns
@@ -169,7 +181,18 @@ if __name__ == "__main__":
   print "Overall ambiguity for range [0,1000] =", a
   print "Probability of ambiguity =", p
 
-  rns = [5, 11, 13]
+  # Has 4 moduli, all prime - this one is better (smaller numbers).
+  rns = [3, 5, 7, 11]
+  print
+  print "RNS system=",rns
+  a, p = rnsComputeAmbiguity(rns, 0, 1000)
+  print "Overall ambiguity for range [0,1000] =", a
+  print "Probability of ambiguity =", p
+
+  # Has 4 moduli, all increasing by sqrt(2) from a base. Works but not for
+  # smaller bases
+  base = 7
+  rns = [base, int(round(base*1.4)), base*2, int(round(base*2.0*1.4))]
   print
   print "RNS system=",rns
   a, p = rnsComputeAmbiguity(rns, 0, 1000)
